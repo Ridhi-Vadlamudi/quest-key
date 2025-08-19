@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ interface Summary {
 const Dashboard = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
@@ -90,6 +92,8 @@ const Dashboard = () => {
     );
   }
 
+  const defaultTab = searchParams.get("tab") || "upload";
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -99,7 +103,7 @@ const Dashboard = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="upload" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="upload">
             <Plus className="mr-2 h-4 w-4" />
@@ -132,9 +136,6 @@ const Dashboard = () => {
                 <p className="text-muted-foreground mb-4">
                   Upload your first document to get started
                 </p>
-                <Button onClick={() => navigate("?tab=upload")}>
-                  Upload Document
-                </Button>
               </CardContent>
             </Card>
           ) : (
