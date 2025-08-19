@@ -14,7 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      documents: {
+        Row: {
+          content: string | null
+          created_at: string
+          file_name: string | null
+          file_path: string | null
+          file_type: string | null
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          file_type?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          file_type?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      flashcards: {
+        Row: {
+          answer: string
+          created_at: string
+          difficulty: number | null
+          document_id: string
+          id: string
+          next_review: string | null
+          question: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          difficulty?: number | null
+          document_id: string
+          id?: string
+          next_review?: string | null
+          question: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          difficulty?: number | null
+          document_id?: string
+          id?: string
+          next_review?: string | null
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashcards_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_questions: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          document_id: string
+          explanation: string | null
+          id: string
+          options: Json | null
+          question: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          document_id: string
+          explanation?: string | null
+          id?: string
+          options?: Json | null
+          question: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          document_id?: string
+          explanation?: string | null
+          id?: string
+          options?: Json | null
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_questions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      summaries: {
+        Row: {
+          content: string
+          created_at: string
+          document_id: string
+          id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          document_id: string
+          id?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "summaries_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
