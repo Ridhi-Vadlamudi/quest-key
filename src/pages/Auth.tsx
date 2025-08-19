@@ -15,6 +15,7 @@ const Auth = () => {
   const [showVerification, setShowVerification] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [isPasswordless, setIsPasswordless] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -34,28 +35,45 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Welcome back!",
-          description: "You have been signed in successfully.",
-        });
-        
-        navigate("/dashboard");
+        if (isPasswordless) {
+          // Send OTP for login
+          const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+              shouldCreateUser: false
+            }
+          });
+          
+          if (error) throw error;
+          
+          toast({
+            title: "Check your email!",
+            description: "We've sent you a login code.",
+          });
+          
+          setShowVerification(true);
+        } else {
+          // Regular password login
+          const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          
+          if (error) throw error;
+          
+          toast({
+            title: "Welcome back!",
+            description: "You have been signed in successfully.",
+          });
+          
+          navigate("/dashboard");
+        }
       } else {
-        // Use OTP-only signup - this will create the user and send only a code
+        // Sign up with OTP only (no password)
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            shouldCreateUser: true, // This creates the user account
-            data: {
-              // We can't set password with OTP, so we'll handle this differently
-            }
+            shouldCreateUser: true,
           }
         });
         
@@ -63,10 +81,11 @@ const Auth = () => {
         
         toast({
           title: "Check your email!",
-          description: "We've sent you a verification code to create your account.",
+          description: "We've sent you a verification code to create your StudyHelp account.",
         });
         
         setShowVerification(true);
+        setIsPasswordless(true); // Set to passwordless after signup
       }
     } catch (error: any) {
       toast({
@@ -86,7 +105,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: true // Allow creating user if needed
+          shouldCreateUser: !isLogin // Only create user if signing up
         }
       });
       
@@ -123,21 +142,9 @@ const Auth = () => {
       
       if (error) throw error;
       
-      // After OTP verification, if user provided a password, we should update it
-      if (password && !isLogin) {
-        const { error: updateError } = await supabase.auth.updateUser({
-          password: password
-        });
-        
-        if (updateError) {
-          console.warn("Could not set password:", updateError.message);
-          // Don't throw here, just warn - user is still logged in
-        }
-      }
-      
       toast({
-        title: "Account verified!",
-        description: "Your account has been successfully created.",
+        title: "Success!",
+        description: isLogin ? "You've been signed in." : "Your StudyHelp account has been created!",
       });
       
       navigate("/dashboard");
@@ -167,7 +174,7 @@ const Auth = () => {
               ? `Enter the verification code sent to ${email}`
               : (isLogin 
                 ? "Welcome back to StudyHelp" 
-                : "Join StudyHelp to start creating study materials"
+                : "Join StudyHelp with just your email - no password needed!"
               )
             }
           </p>
@@ -228,29 +235,61 @@ const Auth = () => {
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    minLength={6}
-                  />
-                </div>
+                {(isLogin && !isPasswordless) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                )}
                 
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Please wait..." : (isLogin ? "Sign In" : "Sign Up")}
+                  {loading 
+                    ? "Please wait..." 
+                    : (isLogin 
+                      ? (isPasswordless ? "Send Login Code" : "Sign In") 
+                      : "Send Verification Code"
+                    )
+                  }
                 </Button>
               </form>
               
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-center space-y-2">
+                {isLogin && !isPasswordless && (
+                  <Button
+                    variant="link"
+                    onClick={() => setIsPasswordless(true)}
+                    className="text-sm w-full"
+                  >
+                    Sign in with email code instead
+                  </Button>
+                )}
+                
+                {isLogin && isPasswordless && (
+                  <Button
+                    variant="link"
+                    onClick={() => setIsPasswordless(false)}
+                    className="text-sm w-full"
+                  >
+                    Sign in with password instead
+                  </Button>
+                )}
+                
                 <Button
                   variant="link"
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-sm"
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setIsPasswordless(false);
+                    setPassword("");
+                  }}
+                  className="text-sm w-full"
                 >
                   {isLogin
                     ? "Don't have an account? Sign up"
