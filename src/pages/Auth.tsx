@@ -36,12 +36,9 @@ const Auth = () => {
     try {
       if (isLogin) {
         if (isPasswordless) {
-          // Send OTP for login
-          const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              shouldCreateUser: false
-            }
+          // Send custom verification code for login
+          const { error } = await supabase.functions.invoke("send-verification-code", {
+            body: { email, type: 'login' },
           });
           
           if (error) throw error;
@@ -53,7 +50,7 @@ const Auth = () => {
           
           setShowVerification(true);
         } else {
-          // Regular password login
+          // Regular password login (if user has password set)
           const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -69,12 +66,9 @@ const Auth = () => {
           navigate("/dashboard");
         }
       } else {
-        // Sign up with OTP only (no password)
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            shouldCreateUser: true,
-          }
+        // Send custom verification code for signup
+        const { error } = await supabase.functions.invoke("send-verification-code", {
+          body: { email, type: 'signup' },
         });
         
         if (error) throw error;
@@ -85,12 +79,12 @@ const Auth = () => {
         });
         
         setShowVerification(true);
-        setIsPasswordless(true); // Set to passwordless after signup
+        setIsPasswordless(true);
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -102,11 +96,11 @@ const Auth = () => {
     setResending(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: !isLogin // Only create user if signing up
-        }
+      const { error } = await supabase.functions.invoke("send-verification-code", {
+        body: { 
+          email, 
+          type: isLogin ? 'login' : 'signup'
+        },
       });
       
       if (error) throw error;
@@ -121,7 +115,7 @@ const Auth = () => {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to resend code. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -134,24 +128,40 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: verificationCode,
-        type: 'email'
+      // Use our custom verification function
+      const { data, error } = await supabase.functions.invoke("verify-code", {
+        body: { 
+          email, 
+          code: verificationCode, 
+          type: isLogin ? 'login' : 'signup'
+        },
       });
       
       if (error) throw error;
       
-      toast({
-        title: "Success!",
-        description: isLogin ? "You've been signed in." : "Your StudyHelp account has been created!",
-      });
+      if (!isLogin) {
+        // For signup, the user is created server-side
+        toast({
+          title: "Welcome to StudyHelp!",
+          description: "Your account has been created successfully.",
+        });
+      } else {
+        // For login, we need to use the auth URL
+        if (data.auth_url) {
+          window.location.href = data.auth_url;
+          return;
+        }
+        toast({
+          title: "Welcome back!",
+          description: "You've been signed in successfully.",
+        });
+      }
       
       navigate("/dashboard");
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Invalid verification code. Please try again.",
         variant: "destructive",
       });
     } finally {
