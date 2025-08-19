@@ -47,12 +47,26 @@ const Auth = () => {
         
         navigate("/dashboard");
       } else {
-        const { error } = await supabase.auth.signUp({
+        // First create the account with email confirmation disabled
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`
+          }
         });
         
-        if (error) throw error;
+        if (signUpError) throw signUpError;
+
+        // Then send an OTP for verification
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            shouldCreateUser: false // Don't create new user, just send OTP to existing unconfirmed user
+          }
+        });
+        
+        if (otpError) throw otpError;
         
         toast({
           title: "Check your email!",
@@ -80,7 +94,7 @@ const Auth = () => {
       const { error } = await supabase.auth.verifyOtp({
         email,
         token: verificationCode,
-        type: 'signup'
+        type: 'email' // Changed from 'signup' to 'email'
       });
       
       if (error) throw error;
