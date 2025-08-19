@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const FileUpload = () => {
   const [uploading, setUploading] = useState(false);
@@ -17,6 +18,7 @@ const FileUpload = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -139,8 +141,11 @@ const FileUpload = () => {
   if (!user) {
     return (
       <Card className="max-w-2xl mx-auto">
-        <CardContent className="pt-6 text-center">
-          <p className="text-muted-foreground">Please sign in to upload documents.</p>
+        <CardContent className="pt-6 text-center space-y-4">
+          <p className="text-muted-foreground">Please sign in to upload documents and create study materials.</p>
+          <Button onClick={() => navigate("/auth")} variant="default">
+            Sign In / Sign Up
+          </Button>
         </CardContent>
       </Card>
     );
