@@ -7,8 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 
 const FileUpload = () => {
   const [uploading, setUploading] = useState(false);
@@ -17,18 +15,19 @@ const FileUpload = () => {
   const [title, setTitle] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
-  const navigate = useNavigate();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) return;
 
     setUploading(true);
 
     try {
+      // Create anonymous user ID for session
+      const sessionId = Math.random().toString(36).substring(2, 15);
+
       // Upload file to Supabase Storage
-      const fileName = `${user.id}/${Date.now()}-${file.name}`;
+      const fileName = `anonymous/${sessionId}/${Date.now()}-${file.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("documents")
         .upload(fileName, file);
@@ -40,21 +39,19 @@ const FileUpload = () => {
       if (file.type === "text/plain") {
         content = await file.text();
       } else if (file.type === "application/pdf") {
-        // For PDF, we'll store the file path and process it server-side
-        // In a real implementation, you'd use PDF.js or similar
         content = `[PDF Content - ${file.name}]\nThis is a PDF file that needs to be processed.`;
       }
 
-      // Create document record
+      // Create document record without user_id
       const { data: docData, error: docError } = await supabase
         .from("documents")
         .insert({
-          user_id: user.id,
           title: title || file.name,
           file_name: file.name,
           file_path: uploadData.path,
           file_type: file.type,
           content: content,
+          session_id: sessionId,
         })
         .select()
         .single();
@@ -88,19 +85,22 @@ const FileUpload = () => {
   };
 
   const handleTextSubmit = async () => {
-    if (!textContent.trim() || !user) return;
+    if (!textContent.trim()) return;
 
     setProcessing(true);
 
     try {
+      // Create anonymous user ID for session
+      const sessionId = Math.random().toString(36).substring(2, 15);
+
       // Create document record for text
       const { data: docData, error: docError } = await supabase
         .from("documents")
         .insert({
-          user_id: user.id,
           title: title || "Text Document",
           content: textContent,
           file_type: "text/plain",
+          session_id: sessionId,
         })
         .select()
         .single();
@@ -135,21 +135,8 @@ const FileUpload = () => {
       body: { documentId, content },
     });
 
-    if (error) throw error;
+  if (error) throw error;
   };
-
-  if (!user) {
-    return (
-      <Card className="max-w-2xl mx-auto">
-        <CardContent className="pt-6 text-center space-y-4">
-          <p className="text-muted-foreground">Please sign in to upload documents and create study materials.</p>
-          <Button onClick={() => navigate("/auth")} variant="default">
-            Sign In / Sign Up
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

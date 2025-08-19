@@ -1,21 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, Zap } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-study.jpg";
 
 const Hero = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleUploadClick = () => {
-    if (!user) {
-      navigate("/auth");
-    } else {
-      // Scroll to upload section
-      const uploadSection = document.getElementById("upload");
-      uploadSection?.scrollIntoView({ behavior: "smooth" });
-    }
+    // Scroll to upload section
+    const uploadSection = document.getElementById("upload");
+    uploadSection?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleLearnMoreClick = () => {
@@ -42,7 +36,7 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button variant="secondary" size="lg" className="group" onClick={handleUploadClick}>
                 <Upload className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                {user ? "Upload Your Document" : "Get Started Now"}
+                Upload Your Document
               </Button>
               <Button variant="outline-hero" size="lg" onClick={handleLearnMoreClick}>
                 <Zap className="mr-2 h-5 w-5" />

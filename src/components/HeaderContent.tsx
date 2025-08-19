@@ -1,20 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { BookOpen, Menu } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const HeaderContent = () => {
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleNavigation = (path: string) => {
     navigate(path);
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
   };
 
   return (
@@ -44,46 +36,12 @@ const HeaderContent = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => handleNavigation("/dashboard")} 
-                  className="hidden md:inline-flex"
-                >
-                  Dashboard
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  onClick={handleSignOut} 
-                  className="hidden md:inline-flex"
-                >
-                  Sign Out
-                </Button>
-                <Button 
-                  variant="hero" 
-                  onClick={() => handleNavigation("/dashboard")}
-                >
-                  Dashboard
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => handleNavigation("/auth")} 
-                  className="hidden md:inline-flex"
-                >
-                  Sign In
-                </Button>
-                <Button 
-                  variant="hero" 
-                  onClick={() => handleNavigation("/auth")}
-                >
-                  Get Started
-                </Button>
-              </>
-            )}
+            <Button 
+              variant="hero" 
+              onClick={() => handleNavigation("/dashboard")}
+            >
+              My Documents
+            </Button>
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
             </Button>
