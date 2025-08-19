@@ -48,30 +48,22 @@ const Auth = () => {
         
         navigate("/dashboard");
       } else {
-        // First create the account with email confirmation disabled
-        const { error: signUpError } = await supabase.auth.signUp({
+        // Use OTP-only signup - this will create the user and send only a code
+        const { error } = await supabase.auth.signInWithOtp({
           email,
-          password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`
+            shouldCreateUser: true, // This creates the user account
+            data: {
+              // We can't set password with OTP, so we'll handle this differently
+            }
           }
         });
         
-        if (signUpError) throw signUpError;
-
-        // Then send an OTP for verification
-        const { error: otpError } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            shouldCreateUser: false // Don't create new user, just send OTP to existing unconfirmed user
-          }
-        });
-        
-        if (otpError) throw otpError;
+        if (error) throw error;
         
         toast({
           title: "Check your email!",
-          description: "We've sent you a verification code to complete your registration.",
+          description: "We've sent you a verification code to create your account.",
         });
         
         setShowVerification(true);
@@ -94,7 +86,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false
+          shouldCreateUser: true // Allow creating user if needed
         }
       });
       
@@ -105,7 +97,7 @@ const Auth = () => {
         description: "We've sent a new verification code to your email.",
       });
       
-      setVerificationCode(""); // Clear the input field
+      setVerificationCode("");
       
     } catch (error: any) {
       toast({
@@ -130,6 +122,18 @@ const Auth = () => {
       });
       
       if (error) throw error;
+      
+      // After OTP verification, if user provided a password, we should update it
+      if (password && !isLogin) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          password: password
+        });
+        
+        if (updateError) {
+          console.warn("Could not set password:", updateError.message);
+          // Don't throw here, just warn - user is still logged in
+        }
+      }
       
       toast({
         title: "Account verified!",
