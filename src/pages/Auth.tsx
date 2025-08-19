@@ -14,6 +14,7 @@ const Auth = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [showVerification, setShowVerification] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -86,6 +87,37 @@ const Auth = () => {
     }
   };
 
+  const handleResendCode = async () => {
+    setResending(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Code resent!",
+        description: "We've sent a new verification code to your email.",
+      });
+      
+      setVerificationCode(""); // Clear the input field
+      
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setResending(false);
+    }
+  };
+
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -94,7 +126,7 @@ const Auth = () => {
       const { error } = await supabase.auth.verifyOtp({
         email,
         token: verificationCode,
-        type: 'email' // Changed from 'signup' to 'email'
+        type: 'email'
       });
       
       if (error) throw error;
@@ -156,14 +188,26 @@ const Auth = () => {
                 {loading ? "Verifying..." : "Verify Account"}
               </Button>
               
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => {setShowVerification(false); setVerificationCode("");}}
-                className="w-full text-sm"
-              >
-                Back to Sign Up
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleResendCode}
+                  disabled={resending}
+                  className="w-full"
+                >
+                  {resending ? "Resending..." : "Resend Code"}
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => {setShowVerification(false); setVerificationCode("");}}
+                  className="w-full text-sm"
+                >
+                  Back to Sign Up
+                </Button>
+              </div>
             </form>
           ) : (
             <>
