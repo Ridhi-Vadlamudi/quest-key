@@ -22,9 +22,10 @@ export type Database = {
           file_path: string | null
           file_type: string | null
           id: string
+          session_id: string | null
           title: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           content?: string | null
@@ -33,9 +34,10 @@ export type Database = {
           file_path?: string | null
           file_type?: string | null
           id?: string
+          session_id?: string | null
           title: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           content?: string | null
@@ -44,9 +46,10 @@ export type Database = {
           file_path?: string | null
           file_type?: string | null
           id?: string
+          session_id?: string | null
           title?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

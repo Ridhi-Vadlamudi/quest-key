@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +30,6 @@ interface Summary {
 }
 
 const Dashboard = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [summaries, setSummaries] = useState<Summary[]>([]);
@@ -40,16 +37,8 @@ const Dashboard = () => {
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, navigate]);
-
-  useEffect(() => {
-    if (user) {
-      fetchUserData();
-    }
-  }, [user]);
+    fetchUserData();
+  }, []);
 
   const fetchUserData = async () => {
     try {
@@ -57,7 +46,6 @@ const Dashboard = () => {
       const { data: docsData } = await supabase
         .from("documents")
         .select("*")
-        .eq("user_id", user?.id)
         .order("created_at", { ascending: false });
 
       setDocuments(docsData || []);
@@ -84,7 +72,7 @@ const Dashboard = () => {
     }
   };
 
-  if (loading || loadingData) {
+  if (loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>

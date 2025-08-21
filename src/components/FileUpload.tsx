@@ -23,11 +23,8 @@ const FileUpload = () => {
     setUploading(true);
 
     try {
-      // Create anonymous user ID for session
-      const sessionId = Math.random().toString(36).substring(2, 15);
-
       // Upload file to Supabase Storage
-      const fileName = `anonymous/${sessionId}/${Date.now()}-${file.name}`;
+      const fileName = `anonymous/${Date.now()}-${file.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("documents")
         .upload(fileName, file);
@@ -51,7 +48,6 @@ const FileUpload = () => {
           file_path: uploadData.path,
           file_type: file.type,
           content: content,
-          session_id: sessionId,
         })
         .select()
         .single();
@@ -90,9 +86,6 @@ const FileUpload = () => {
     setProcessing(true);
 
     try {
-      // Create anonymous user ID for session
-      const sessionId = Math.random().toString(36).substring(2, 15);
-
       // Create document record for text
       const { data: docData, error: docError } = await supabase
         .from("documents")
@@ -100,7 +93,6 @@ const FileUpload = () => {
           title: title || "Text Document",
           content: textContent,
           file_type: "text/plain",
-          session_id: sessionId,
         })
         .select()
         .single();
