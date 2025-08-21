@@ -6,8 +6,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import FileUpload from "@/components/FileUpload";
-import { FileText, Brain, CreditCard, Play, Plus } from "lucide-react";
+import FlashcardStudy from "@/components/FlashcardStudy";
+import { FileText, Brain, CreditCard, Play, Plus, ChevronDown, ChevronRight } from "lucide-react";
 
 interface Document {
   id: string;
@@ -30,15 +32,33 @@ interface Summary {
 }
 
 const Dashboard = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [studyMode, setStudyMode] = useState<{flashcards: Flashcard[], documentTitle: string} | null>(null);
+  const [openDocuments, setOpenDocuments] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  const toggleDocumentOpen = (docId: string) => {
+    setOpenDocuments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(docId)) {
+        newSet.delete(docId);
+      } else {
+        newSet.add(docId);
+      }
+      return newSet;
+    });
+  };
+
+  const switchToTab = (tabName: string) => {
+    setSearchParams({ tab: tabName });
+  };
 
   const fetchUserData = async () => {
     try {
@@ -81,6 +101,16 @@ const Dashboard = () => {
   }
 
   const defaultTab = searchParams.get("tab") || "upload";
+
+  if (studyMode) {
+    return (
+      <FlashcardStudy
+        flashcards={studyMode.flashcards}
+        documentTitle={studyMode.documentTitle}
+        onClose={() => setStudyMode(null)}
+      />
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -155,10 +185,7 @@ const Dashboard = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => {
-                              const summaryTab = document.querySelector('[data-value="summaries"]') as HTMLElement;
-                              summaryTab?.click();
-                            }}
+                            onClick={() => switchToTab("summaries")}
                           >
                             <Brain className="mr-1 h-3 w-3" />
                             View Summary
@@ -168,10 +195,7 @@ const Dashboard = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => {
-                              const flashcardsTab = document.querySelector('[data-value="flashcards"]') as HTMLElement;
-                              flashcardsTab?.click();
-                            }}
+                            onClick={() => switchToTab("flashcards")}
                           >
                             <CreditCard className="mr-1 h-3 w-3" />
                             Study Cards
@@ -199,25 +223,23 @@ const Dashboard = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {summaries.map((summary) => {
-                const doc = documents.find(d => d.id === summary.document_id);
-                return (
+              {documents.filter(doc => summaries.some(s => s.document_id === doc.id)).map((doc) => {
+                const docSummaries = summaries.filter(s => s.document_id === doc.id);
+                
+                return docSummaries.map((summary) => (
                   <Card key={summary.id}>
                     <CardHeader>
-                      <CardTitle>{doc?.title} - Summary</CardTitle>
+                      <CardTitle>{doc.title} - Summary</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="prose prose-sm max-w-none">
-                        <p className="text-sm whitespace-pre-wrap">
-                          {summary.content.slice(0, 200)}...
-                        </p>
+                        <div className="text-sm whitespace-pre-wrap bg-muted/50 p-4 rounded-lg">
+                          {summary.content}
+                        </div>
                       </div>
-                      <Button size="sm" className="mt-3">
-                        Read Full Summary
-                      </Button>
                     </CardContent>
                   </Card>
-                );
+                ));
               })}
             </div>
           )}
@@ -238,49 +260,61 @@ const Dashboard = () => {
             <div className="grid gap-4">
               {documents.filter(doc => flashcards.some(f => f.document_id === doc.id)).map((doc) => {
                 const docFlashcards = flashcards.filter(f => f.document_id === doc.id);
+                const isOpen = openDocuments.has(doc.id);
                 
                 return (
                   <Card key={doc.id}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span>{doc.title}</span>
-                        <Badge variant="secondary">{docFlashcards.length} Cards</Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Created {new Date(doc.created_at).toLocaleDateString()}
-                      </p>
+                    <Collapsible open={isOpen} onOpenChange={() => toggleDocumentOpen(doc.id)}>
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-muted/50">
+                          <CardTitle className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {isOpen ? (
+                                <ChevronDown className="h-5 w-5" />
+                              ) : (
+                                <ChevronRight className="h-5 w-5" />
+                              )}
+                              <span>{doc.title}</span>
+                            </div>
+                            <Badge variant="secondary">{docFlashcards.length} Cards</Badge>
+                          </CardTitle>
+                        </CardHeader>
+                      </CollapsibleTrigger>
                       
-                      <div className="space-y-3">
-                        <h4 className="font-medium">Preview (first 3 cards):</h4>
-                        {docFlashcards.slice(0, 3).map((card, index) => (
-                          <div key={card.id} className="border rounded-lg p-3 bg-muted/50">
-                            <p className="font-medium text-sm mb-1">Q{index + 1}: {card.question}</p>
-                            <p className="text-sm text-muted-foreground">
-                              A: {card.answer.slice(0, 100)}{card.answer.length > 100 ? '...' : ''}
-                            </p>
+                      <CollapsibleContent>
+                        <CardContent>
+                          <div className="space-y-3 mb-4">
+                            {docFlashcards.slice(0, 3).map((card, index) => (
+                              <div key={card.id} className="border rounded-lg p-3 bg-muted/30">
+                                <p className="font-medium text-sm mb-1">Q{index + 1}: {card.question}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  A: {card.answer.slice(0, 100)}{card.answer.length > 100 ? '...' : ''}
+                                </p>
+                              </div>
+                            ))}
+                            
+                            {docFlashcards.length > 3 && (
+                              <p className="text-sm text-muted-foreground text-center">
+                                ...and {docFlashcards.length - 3} more cards
+                              </p>
+                            )}
                           </div>
-                        ))}
-                        
-                        {docFlashcards.length > 3 && (
-                          <p className="text-sm text-muted-foreground text-center">
-                            ...and {docFlashcards.length - 3} more cards
-                          </p>
-                        )}
-                        
-                        <Button 
-                          className="w-full mt-4" 
-                          onClick={() => {
-                            // Create a simple study mode - for now just show all cards
-                            alert(`Study mode for "${doc.title}"\n\nThis would open a dedicated flashcard study interface.\n\nTotal cards: ${docFlashcards.length}`);
-                          }}
-                        >
-                          <Play className="mr-2 h-4 w-4" />
-                          Study All {docFlashcards.length} Cards
-                        </Button>
-                      </div>
-                    </CardContent>
+                          
+                          <Button 
+                            className="w-full" 
+                            onClick={() => {
+                              setStudyMode({
+                                flashcards: docFlashcards,
+                                documentTitle: doc.title
+                              });
+                            }}
+                          >
+                            <Play className="mr-2 h-4 w-4" />
+                            Study All {docFlashcards.length} Cards
+                          </Button>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </Card>
                 );
               })}
