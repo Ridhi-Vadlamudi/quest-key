@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import FileUpload from "@/components/FileUpload";
 import FlashcardStudy from "@/components/FlashcardStudy";
-import { FileText, Brain, CreditCard, Play, Plus, ChevronDown, ChevronRight } from "lucide-react";
+import { FileText, Brain, CreditCard, Play, Plus, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Document {
   id: string;
@@ -39,6 +41,7 @@ const Dashboard = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [studyMode, setStudyMode] = useState<{flashcards: Flashcard[], documentTitle: string} | null>(null);
   const [openDocuments, setOpenDocuments] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchUserData();
@@ -58,6 +61,43 @@ const Dashboard = () => {
 
   const switchToTab = (tabName: string) => {
     setSearchParams({ tab: tabName });
+  };
+
+  const deleteDocument = async (docId: string, docTitle: string) => {
+    try {
+      // Delete all related content first
+      await Promise.all([
+        supabase.from('summaries').delete().eq('document_id', docId),
+        supabase.from('flashcards').delete().eq('document_id', docId),
+        supabase.from('practice_questions').delete().eq('document_id', docId),
+      ]);
+
+      // Then delete the document
+      const { error } = await supabase
+        .from('documents')
+        .delete()
+        .eq('id', docId);
+
+      if (error) throw error;
+
+      // Update local state
+      setDocuments(prev => prev.filter(doc => doc.id !== docId));
+      setSummaries(prev => prev.filter(summary => summary.document_id !== docId));
+      setFlashcards(prev => prev.filter(flashcard => flashcard.document_id !== docId));
+
+      // Show success message
+      toast({
+        title: "Document deleted",
+        description: `"${docTitle}" and all its study materials have been deleted.`,
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const fetchUserData = async () => {
@@ -167,9 +207,35 @@ const Dashboard = () => {
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
                         <span className="truncate">{doc.title}</span>
-                        <Badge variant="secondary">
-                          {doc.file_type?.split("/")[1]?.toUpperCase() || "TEXT"}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">
+                            {doc.file_type?.split("/")[1]?.toUpperCase() || "TEXT"}
+                          </Badge>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Document</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{doc.title}"? This will permanently remove the document and all its associated summaries, flashcards, and practice questions. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => deleteDocument(doc.id, doc.title)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
