@@ -41,6 +41,7 @@ const Dashboard = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [studyMode, setStudyMode] = useState<{flashcards: Flashcard[], documentTitle: string} | null>(null);
   const [openDocuments, setOpenDocuments] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "add-content");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -60,12 +61,15 @@ const Dashboard = () => {
   };
 
   const switchToTab = (tabName: string, docId?: string) => {
+    console.log('Switching to tab:', tabName, 'for document:', docId);
+    setActiveTab(tabName);
     setSearchParams({ tab: tabName });
     
     // If a document ID is provided, scroll to it after a short delay
     if (docId) {
       setTimeout(() => {
         const element = document.getElementById(`doc-${docId}`);
+        console.log('Looking for element:', `doc-${docId}`, 'Found:', !!element);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
           // Add a highlight effect
@@ -157,6 +161,12 @@ const Dashboard = () => {
 
   const defaultTab = searchParams.get("tab") || "add-content";
 
+  // Update activeTab when URL changes
+  useEffect(() => {
+    const tab = searchParams.get("tab") || "add-content";
+    setActiveTab(tab);
+  }, [searchParams]);
+
   if (studyMode) {
     return (
       <FlashcardStudy
@@ -176,7 +186,11 @@ const Dashboard = () => {
         </p>
       </div>
 
-      <Tabs defaultValue={defaultTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(value) => {
+        console.log('Tab changed to:', value);
+        setActiveTab(value);
+        setSearchParams({ tab: value });
+      }} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="add-content">
             <Plus className="mr-2 h-4 w-4" />
@@ -262,11 +276,16 @@ const Dashboard = () => {
                         <Badge variant="outline">{docFlashcards.length} Flashcards</Badge>
                       </div>
                       <div className="flex gap-2">
-                        {docSummaries.length > 0 && (
+                         {docSummaries.length > 0 && (
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => switchToTab("summaries", doc.id)}
+                            onClick={(e) => {
+                              console.log('View Summary clicked for doc:', doc.id);
+                              e.preventDefault();
+                              e.stopPropagation();
+                              switchToTab("summaries", doc.id);
+                            }}
                           >
                             <Brain className="mr-1 h-3 w-3" />
                             View Summary
@@ -276,7 +295,12 @@ const Dashboard = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => switchToTab("flashcards", doc.id)}
+                            onClick={(e) => {
+                              console.log('Study Cards clicked for doc:', doc.id);
+                              e.preventDefault();
+                              e.stopPropagation();
+                              switchToTab("flashcards", doc.id);
+                            }}
                           >
                             <CreditCard className="mr-1 h-3 w-3" />
                             Study Cards
