@@ -59,8 +59,23 @@ const Dashboard = () => {
     });
   };
 
-  const switchToTab = (tabName: string) => {
+  const switchToTab = (tabName: string, docId?: string) => {
     setSearchParams({ tab: tabName });
+    
+    // If a document ID is provided, scroll to it after a short delay
+    if (docId) {
+      setTimeout(() => {
+        const element = document.getElementById(`doc-${docId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Add a highlight effect
+          element.classList.add('ring-2', 'ring-primary', 'ring-opacity-50');
+          setTimeout(() => {
+            element.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+          }, 2000);
+        }
+      }, 100);
+    }
   };
 
   const deleteDocument = async (docId: string, docTitle: string) => {
@@ -140,7 +155,7 @@ const Dashboard = () => {
     );
   }
 
-  const defaultTab = searchParams.get("tab") || "upload";
+  const defaultTab = searchParams.get("tab") || "add-content";
 
   if (studyMode) {
     return (
@@ -163,9 +178,9 @@ const Dashboard = () => {
 
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="upload">
+          <TabsTrigger value="add-content">
             <Plus className="mr-2 h-4 w-4" />
-            Upload
+            Add Content
           </TabsTrigger>
           <TabsTrigger value="documents">
             <FileText className="mr-2 h-4 w-4" />
@@ -181,7 +196,7 @@ const Dashboard = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="upload" className="space-y-6">
+        <TabsContent value="add-content" className="space-y-6">
           <FileUpload />
         </TabsContent>
 
@@ -192,7 +207,7 @@ const Dashboard = () => {
                 <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="font-semibold mb-2">No documents yet</h3>
                 <p className="text-muted-foreground mb-4">
-                  Upload your first document to get started
+                  Add your first content to get started
                 </p>
               </CardContent>
             </Card>
@@ -251,7 +266,7 @@ const Dashboard = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => switchToTab("summaries")}
+                            onClick={() => switchToTab("summaries", doc.id)}
                           >
                             <Brain className="mr-1 h-3 w-3" />
                             View Summary
@@ -261,7 +276,7 @@ const Dashboard = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => switchToTab("flashcards")}
+                            onClick={() => switchToTab("flashcards", doc.id)}
                           >
                             <CreditCard className="mr-1 h-3 w-3" />
                             Study Cards
@@ -283,7 +298,7 @@ const Dashboard = () => {
                 <Brain className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="font-semibold mb-2">No summaries yet</h3>
                 <p className="text-muted-foreground">
-                  Upload documents to generate AI summaries
+                  Add content to generate AI summaries
                 </p>
               </CardContent>
             </Card>
@@ -293,7 +308,7 @@ const Dashboard = () => {
                 const docSummaries = summaries.filter(s => s.document_id === doc.id);
                 
                 return docSummaries.map((summary) => (
-                  <Card key={summary.id}>
+                  <Card key={summary.id} id={`doc-${doc.id}`} className="transition-all duration-300">
                     <CardHeader>
                       <CardTitle>{doc.title} - Summary</CardTitle>
                     </CardHeader>
@@ -318,7 +333,7 @@ const Dashboard = () => {
                 <CreditCard className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="font-semibold mb-2">No flashcards yet</h3>
                 <p className="text-muted-foreground">
-                  Upload documents to generate AI flashcards
+                  Add content to generate AI flashcards
                 </p>
               </CardContent>
             </Card>
@@ -329,7 +344,7 @@ const Dashboard = () => {
                 const isOpen = openDocuments.has(doc.id);
                 
                 return (
-                  <Card key={doc.id}>
+                  <Card key={doc.id} id={`doc-${doc.id}`} className="transition-all duration-300">
                     <Collapsible open={isOpen} onOpenChange={() => toggleDocumentOpen(doc.id)}>
                       <CollapsibleTrigger asChild>
                         <CardHeader className="cursor-pointer hover:bg-muted/50">
