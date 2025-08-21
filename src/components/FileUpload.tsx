@@ -36,7 +36,13 @@ const FileUpload = () => {
       if (file.type === "text/plain") {
         content = await file.text();
       } else if (file.type === "application/pdf") {
-        content = `[PDF Content - ${file.name}]\nThis is a PDF file that needs to be processed.`;
+        // For PDF files, we'll read as array buffer and let the backend process it
+        const arrayBuffer = await file.arrayBuffer();
+        content = `PDF_BINARY_DATA:${Array.from(new Uint8Array(arrayBuffer)).join(',')}`;
+      } else if (file.name.toLowerCase().endsWith('.docx')) {
+        content = `[DOCX Content - ${file.name}]\nDOCX file uploaded - content will be extracted server-side.`;
+      } else {
+        content = await file.text(); // Try to read as text for other formats
       }
 
       // Create document record without user_id

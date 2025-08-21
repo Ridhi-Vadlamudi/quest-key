@@ -30,6 +30,30 @@ serve(async (req) => {
 
     console.log('Processing document:', documentId);
 
+    // Handle PDF binary data extraction
+    let processedContent = content;
+    if (content.startsWith('PDF_BINARY_DATA:')) {
+      try {
+        console.log('Extracting text from PDF binary data...');
+        // For now, we'll use a simple approach - in production you'd want proper PDF parsing
+        // This is a fallback approach since we can't easily use pdf-parse in Deno edge functions
+        processedContent = `This PDF document was uploaded but text extraction is not yet fully implemented. 
+        Please extract the text manually and paste it in the text area for best results.
+        
+        Based on the filename and type, this appears to be: ${documentId}
+        
+        For better processing, please:
+        1. Copy the text from your PDF
+        2. Paste it in the "Paste Your Text" section
+        3. This will give you much better summaries and flashcards
+        
+        Or try uploading a .txt file instead.`;
+      } catch (e) {
+        console.error('PDF processing error:', e);
+        processedContent = 'PDF processing failed. Please try pasting the text directly.';
+      }
+    }
+
     // Generate summary
     const summaryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -44,10 +68,10 @@ serve(async (req) => {
             role: 'system',
             content: 'You are an expert at creating comprehensive, well-structured summaries of study materials. Create a clear, organized summary that captures all key concepts, important details, and main points. Use bullet points and headers where appropriate to make it easy to study from.'
           },
-          {
-            role: 'user',
-            content: `Please create a comprehensive study summary of the following content:\n\n${content}`
-          }
+           {
+             role: 'user',
+             content: `Please create a comprehensive study summary of the following content:\n\n${processedContent}`
+           }
         ],
         max_completion_tokens: 2000,
       }),
@@ -80,10 +104,10 @@ serve(async (req) => {
             role: 'system',
             content: 'You are an expert at creating effective study flashcards. Create 8-12 flashcards that test the most important concepts from the material. Each flashcard should have a clear, concise question and a detailed answer. Format your response as a JSON array with objects containing "question" and "answer" fields.'
           },
-          {
-            role: 'user',
-            content: `Create flashcards from this content:\n\n${content}`
-          }
+           {
+             role: 'user',
+             content: `Create flashcards from this content:\n\n${processedContent}`
+           }
         ],
         max_completion_tokens: 2000,
       }),
@@ -140,10 +164,10 @@ serve(async (req) => {
             role: 'system',
             content: 'You are an expert at creating practice questions for study materials. Create 5-8 multiple choice questions that test understanding of key concepts. Format your response as a JSON array with objects containing "question", "options" (array of 4 choices), "correct_answer", and "explanation" fields.'
           },
-          {
-            role: 'user',
-            content: `Create practice questions from this content:\n\n${content}`
-          }
+           {
+             role: 'user',
+             content: `Create practice questions from this content:\n\n${processedContent}`
+           }
         ],
         max_completion_tokens: 2000,
       }),

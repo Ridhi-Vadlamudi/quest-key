@@ -127,30 +127,61 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {documents.map((doc) => (
-                <Card key={doc.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="truncate">{doc.title}</span>
-                      <Badge variant="secondary">
-                        {doc.file_type?.split("/")[1]?.toUpperCase() || "TEXT"}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Created {new Date(doc.created_at).toLocaleDateString()}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <Play className="mr-1 h-3 w-3" />
-                        Study
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="grid gap-4">
+              {documents.map((doc) => {
+                const docSummaries = summaries.filter(s => s.document_id === doc.id);
+                const docFlashcards = flashcards.filter(f => f.document_id === doc.id);
+                
+                return (
+                  <Card key={doc.id}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <span className="truncate">{doc.title}</span>
+                        <Badge variant="secondary">
+                          {doc.file_type?.split("/")[1]?.toUpperCase() || "TEXT"}
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Created {new Date(doc.created_at).toLocaleDateString()}
+                      </p>
+                      <div className="flex gap-2 mb-3">
+                        <Badge variant="outline">{docSummaries.length} Summary</Badge>
+                        <Badge variant="outline">{docFlashcards.length} Flashcards</Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        {docSummaries.length > 0 && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              const summaryTab = document.querySelector('[data-value="summaries"]') as HTMLElement;
+                              summaryTab?.click();
+                            }}
+                          >
+                            <Brain className="mr-1 h-3 w-3" />
+                            View Summary
+                          </Button>
+                        )}
+                        {docFlashcards.length > 0 && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              const flashcardsTab = document.querySelector('[data-value="flashcards"]') as HTMLElement;
+                              flashcardsTab?.click();
+                            }}
+                          >
+                            <CreditCard className="mr-1 h-3 w-3" />
+                            Study Cards
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>
@@ -204,33 +235,56 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {flashcards.slice(0, 10).map((card) => {
-                const doc = documents.find(d => d.id === card.document_id);
+            <div className="grid gap-4">
+              {documents.filter(doc => flashcards.some(f => f.document_id === doc.id)).map((doc) => {
+                const docFlashcards = flashcards.filter(f => f.document_id === doc.id);
+                
                 return (
-                  <Card key={card.id}>
+                  <Card key={doc.id}>
                     <CardHeader>
-                      <CardTitle className="text-sm">{doc?.title}</CardTitle>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>{doc.title}</span>
+                        <Badge variant="secondary">{docFlashcards.length} Cards</Badge>
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        <p className="font-medium text-sm">Q: {card.question}</p>
-                        <p className="text-sm text-muted-foreground">
-                          A: {card.answer.slice(0, 100)}...
-                        </p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Created {new Date(doc.created_at).toLocaleDateString()}
+                      </p>
+                      
+                      <div className="space-y-3">
+                        <h4 className="font-medium">Preview (first 3 cards):</h4>
+                        {docFlashcards.slice(0, 3).map((card, index) => (
+                          <div key={card.id} className="border rounded-lg p-3 bg-muted/50">
+                            <p className="font-medium text-sm mb-1">Q{index + 1}: {card.question}</p>
+                            <p className="text-sm text-muted-foreground">
+                              A: {card.answer.slice(0, 100)}{card.answer.length > 100 ? '...' : ''}
+                            </p>
+                          </div>
+                        ))}
+                        
+                        {docFlashcards.length > 3 && (
+                          <p className="text-sm text-muted-foreground text-center">
+                            ...and {docFlashcards.length - 3} more cards
+                          </p>
+                        )}
+                        
+                        <Button 
+                          className="w-full mt-4" 
+                          onClick={() => {
+                            // Create a simple study mode - for now just show all cards
+                            alert(`Study mode for "${doc.title}"\n\nThis would open a dedicated flashcard study interface.\n\nTotal cards: ${docFlashcards.length}`);
+                          }}
+                        >
+                          <Play className="mr-2 h-4 w-4" />
+                          Study All {docFlashcards.length} Cards
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
                 );
               })}
             </div>
-          )}
-          {flashcards.length > 10 && (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <Button>View All {flashcards.length} Flashcards</Button>
-              </CardContent>
-            </Card>
           )}
         </TabsContent>
       </Tabs>
