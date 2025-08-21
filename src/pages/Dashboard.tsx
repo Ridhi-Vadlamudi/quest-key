@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { FileText, Brain, CreditCard, Play, Plus, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
 import FlashcardStudy from "@/components/FlashcardStudy";
-import { FileText, Brain, CreditCard, Play, Plus, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface Document {
   id: string;
