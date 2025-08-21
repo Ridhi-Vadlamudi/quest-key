@@ -44,9 +44,16 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "add-content");
   const { toast } = useToast();
 
+  // All useEffect hooks must be at the top, before any conditional returns
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  // Update activeTab when URL changes
+  useEffect(() => {
+    const tab = searchParams.get("tab") || "add-content";
+    setActiveTab(tab);
+  }, [searchParams]);
 
   const toggleDocumentOpen = (docId: string) => {
     setOpenDocuments(prev => {
@@ -158,14 +165,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const defaultTab = searchParams.get("tab") || "add-content";
-
-  // Update activeTab when URL changes
-  useEffect(() => {
-    const tab = searchParams.get("tab") || "add-content";
-    setActiveTab(tab);
-  }, [searchParams]);
 
   if (studyMode) {
     return (
