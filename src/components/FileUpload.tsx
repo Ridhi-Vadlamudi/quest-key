@@ -59,7 +59,7 @@ const FileUpload = () => {
 
       toast({
         title: "Success!",
-        description: "Your document has been uploaded and processed.",
+        description: "Your document has been uploaded and processed. Check the other tabs to see your generated content!",
       });
 
       // Reset form
@@ -68,6 +68,9 @@ const FileUpload = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+
+      // Trigger a page refresh to show new content
+      window.location.reload();
 
     } catch (error: any) {
       toast({
@@ -104,12 +107,15 @@ const FileUpload = () => {
 
       toast({
         title: "Success!",
-        description: "Your text has been processed and study materials created.",
+        description: "Your text has been processed and study materials created. Check the other tabs to see your generated content!",
       });
 
       // Reset form
       setTitle("");
       setTextContent("");
+
+      // Trigger a page refresh to show new content
+      window.location.reload();
 
     } catch (error: any) {
       toast({
@@ -123,11 +129,20 @@ const FileUpload = () => {
   };
 
   const processDocument = async (documentId: string, content: string) => {
-    const { error } = await supabase.functions.invoke("process-document", {
+    console.log('Starting document processing for:', documentId);
+    
+    const { data, error } = await supabase.functions.invoke("process-document", {
       body: { documentId, content },
     });
 
-  if (error) throw error;
+    console.log('Process document response:', { data, error });
+    
+    if (error) {
+      console.error('Process document error:', error);
+      throw error;
+    }
+    
+    return data;
   };
 
   return (
