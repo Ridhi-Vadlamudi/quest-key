@@ -7,9 +7,8 @@ const Hero = () => {
   const navigate = useNavigate();
 
   const handleUploadClick = () => {
-    // Scroll to upload section
-    const uploadSection = document.getElementById("upload");
-    uploadSection?.scrollIntoView({ behavior: "smooth" });
+    // Navigate to dashboard documents tab
+    navigate("/dashboard?tab=documents");
   };
 
   const handleLearnMoreClick = () => {
