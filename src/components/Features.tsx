@@ -109,11 +109,10 @@ const Features = () => {
                   <Collapsible open={isExpanded} onOpenChange={() => toggleFeature(index)}>
                     <CollapsibleTrigger asChild>
                       <CardContent className="p-8 cursor-pointer">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="mb-4">
                           <div className="p-3 bg-accent rounded-xl group-hover:scale-110 transition-transform">
                             <feature.icon className="h-6 w-6 text-primary" />
                           </div>
-                          <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         </div>
                         <h3 className="text-xl font-semibold text-card-foreground mb-3">
                           {feature.title}
