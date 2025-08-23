@@ -25,7 +25,7 @@ const Hero = () => {
               <h1 className="text-4xl lg:text-6xl font-bold text-primary-foreground leading-tight">
                 AI-Powered
                 <br />
-                <span className="text-primary-glow">Study Assistant</span>
+                <span className="text-white">Study Assistant</span>
               </h1>
               <p className="text-xl text-primary-foreground/90 leading-relaxed max-w-lg">
                 Transform your PDFs and notes into summaries, flashcards, and practice questions. 
