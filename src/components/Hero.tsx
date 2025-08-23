@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Upload, FileText, Zap } from "lucide-react";
 import heroImage from "@/assets/hero-study.jpg";
 
 const Hero = () => {
@@ -32,16 +32,14 @@ const Hero = () => {
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="secondary" size="lg" className="group" onClick={handleUploadClick}>
-                <Upload className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                Upload Your Document
-              </Button>
-              <Button variant="outline-hero" size="lg" onClick={handleLearnMoreClick}>
-                <Zap className="mr-2 h-5 w-5" />
-                See How It Works
-              </Button>
-            </div>
+          <div className="flex gap-4">
+            <Button onClick={handleUploadClick} size="lg">
+              Start Studying
+            </Button>
+            <Button onClick={() => navigate("/auth")} variant="outline" size="lg">
+              Sign Up
+            </Button>
+          </div>
 
             <div className="flex items-center gap-6 text-primary-foreground/80">
               <div className="flex items-center gap-2">

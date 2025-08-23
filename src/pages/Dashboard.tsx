@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FileText, Brain, CreditCard, Play, Plus, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
 import FlashcardStudy from "@/components/FlashcardStudy";
+import { User, Session } from "@supabase/supabase-js";
 
 interface Document {
   id: string;
@@ -35,6 +36,10 @@ interface Summary {
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
@@ -44,10 +49,39 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "add-content");
   const { toast } = useToast();
 
+  // Authentication check - must be first useEffect
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+      
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+      
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
   // All useEffect hooks must be at the top, before any conditional returns
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    if (user) {
+      fetchUserData();
+    }
+  }, [user]);
 
   // Update activeTab when URL changes
   useEffect(() => {
@@ -158,7 +192,7 @@ const Dashboard = () => {
     }
   };
 
-  if (loadingData) {
+  if (authLoading || loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
