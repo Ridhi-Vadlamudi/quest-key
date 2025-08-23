@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FileText, Brain, Repeat, BarChart3, Lightbulb, Download, ChevronDown, ExternalLink } from "lucide-react";
+import { FileText, Brain, Repeat, BarChart3, Lightbulb, Download, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import flashcardImage from "@/assets/flashcard-feature.jpg";
