@@ -160,37 +160,28 @@ const Features = () => {
         </div>
 
         <div className="bg-gradient-card rounded-3xl p-8 lg:p-12 shadow-lg">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h3 className="text-3xl font-bold text-card-foreground mb-6">
-                See Your Flashcards in Action
-              </h3>
-              <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
-                Our AI doesn't just create flashcards – it creates smart, contextual study materials 
-                that adapt to your learning style and help you retain information longer.
-              </p>
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-3"></div>
-                  <span className="text-muted-foreground">Automatic difficulty adjustment based on your performance</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-3"></div>
-                  <span className="text-muted-foreground">Visual cues and memory techniques embedded in cards</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full mt-3"></div>
-                  <span className="text-muted-foreground">Progress tracking with detailed analytics</span>
-                </li>
-              </ul>
-            </div>
-            <div className="relative">
-              <img 
-                src={flashcardImage} 
-                alt="AI-Generated Flashcard Interface"
-                className="w-full h-auto rounded-2xl shadow-md"
-              />
-            </div>
+          <div className="max-w-2xl mx-auto text-center">
+            <h3 className="text-3xl font-bold text-card-foreground mb-6">
+              See Your Flashcards in Action
+            </h3>
+            <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
+              Our AI doesn't just create flashcards – it creates smart, contextual study materials 
+              that adapt to your learning style and help you retain information longer.
+            </p>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3 justify-center">
+                <div className="w-2 h-2 bg-primary rounded-full mt-3"></div>
+                <span className="text-muted-foreground">Automatic difficulty adjustment based on your performance</span>
+              </li>
+              <li className="flex items-start gap-3 justify-center">
+                <div className="w-2 h-2 bg-primary rounded-full mt-3"></div>
+                <span className="text-muted-foreground">Visual cues and memory techniques embedded in cards</span>
+              </li>
+              <li className="flex items-start gap-3 justify-center">
+                <div className="w-2 h-2 bg-primary rounded-full mt-3"></div>
+                <span className="text-muted-foreground">Progress tracking with detailed analytics</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
