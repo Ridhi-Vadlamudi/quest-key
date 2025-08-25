@@ -49,9 +49,10 @@ const Auth = () => {
 
     setLoading(true);
     setError("");
+    setMessage("");
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -60,12 +61,28 @@ const Auth = () => {
       });
 
       if (error) {
+        if (error.message.includes("User already registered")) {
+          setError("This email is already registered. Please try signing in instead.");
+          return;
+        }
         throw error;
       }
 
-      setMessage("Check your email for a confirmation link to complete your account setup!");
+      // Check if user was created or already exists
+      if (data.user && !data.user.email_confirmed_at) {
+        setMessage("Check your email for a confirmation link to complete your account setup!");
+      } else if (data.user && data.user.email_confirmed_at) {
+        setMessage("Account already confirmed. You can sign in now.");
+      } else {
+        setMessage("Check your email for a confirmation link to complete your account setup!");
+      }
     } catch (error: any) {
-      setError(error.message || "Failed to create account");
+      console.error("Signup error:", error);
+      if (error.message.includes("already")) {
+        setError("This email is already registered. Please try signing in instead.");
+      } else {
+        setError(error.message || "Failed to create account");
+      }
     } finally {
       setLoading(false);
     }
