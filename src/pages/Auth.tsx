@@ -15,8 +15,6 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [showVerification, setShowVerification] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -53,41 +51,7 @@ const Auth = () => {
     setError("");
 
     try {
-      // Send verification code
-      const { data, error: codeError } = await supabase.functions.invoke('send-verification-code', {
-        body: { email }
-      });
-
-      if (codeError) {
-        throw codeError;
-      }
-
-      setMessage("Verification code sent to your email!");
-      setShowVerification(true);
-    } catch (error: any) {
-      setError(error.message || "Failed to send verification code");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyAndSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      // Verify the code first
-      const { error: verifyError } = await supabase.functions.invoke('verify-code', {
-        body: { email, code: verificationCode }
-      });
-
-      if (verifyError) {
-        throw new Error("Invalid verification code");
-      }
-
-      // Now sign up the user
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -95,19 +59,18 @@ const Auth = () => {
         }
       });
 
-      if (signUpError) {
-        throw signUpError;
+      if (error) {
+        throw error;
       }
 
-      setMessage("Account created successfully! You can now sign in.");
-      setShowVerification(false);
-      setIsLogin(true);
+      setMessage("Check your email for a confirmation link to complete your account setup!");
     } catch (error: any) {
-      setError(error.message || "Failed to verify and create account");
+      setError(error.message || "Failed to create account");
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,77 +93,7 @@ const Auth = () => {
     }
   };
 
-  const resendCode = async () => {
-    setLoading(true);
-    try {
-      await supabase.functions.invoke('send-verification-code', {
-        body: { email }
-      });
-      setMessage("New verification code sent!");
-    } catch (error: any) {
-      setError(error.message || "Failed to resend code");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  if (showVerification) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle>Verify Your Email</CardTitle>
-            <CardDescription>
-              Enter the 6-digit verification code sent to {email}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleVerifyAndSignUp} className="space-y-4">
-              <div>
-                <Label htmlFor="verification-code">Verification Code</Label>
-                <Input
-                  id="verification-code"
-                  type="text"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  placeholder="Enter 6-digit code"
-                  maxLength={6}
-                  required
-                />
-              </div>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {message && (
-                <Alert>
-                  <AlertDescription>{message}</AlertDescription>
-                </Alert>
-              )}
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Verifying..." : "Verify & Create Account"}
-              </Button>
-
-              <div className="text-center">
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={resendCode}
-                  disabled={loading}
-                >
-                  Resend Code
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 px-4">
