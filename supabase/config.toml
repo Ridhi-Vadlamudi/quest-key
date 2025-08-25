@@ -8,3 +8,28 @@ verify_jwt = false
 
 [functions.verify-code]
 verify_jwt = false
+
+[functions.send-auth-email]
+verify_jwt = false
+
+[auth]
+enabled = true
+external_email_enabled = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = false
+enable_confirmations = true
+template = { invite = "", confirmation = "", recovery = "", magic_link = "", email_change = "" }
+
+[auth.email.smtp]
+host = ""
+port = 587
+user = ""
+pass = ""
+admin_email = ""
+sender_name = ""
+
+[auth.hook.send_email]
+enabled = true
+uri = "https://agsarxzqbvkdcoqjtifk.supabase.co/functions/v1/send-auth-email"
