@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
         supabase_url: Deno.env.get('SUPABASE_URL') ?? '',
         token,
         token_hash,
-        redirect_to: redirect_to || `${Deno.env.get('SUPABASE_URL')}/dashboard`,
+        redirect_to: redirect_to || 'https://c205ba7d-47ab-47d2-a6fd-ff4ce0f7e395.sandbox.lovable.dev/dashboard',
         email_action_type,
       })
     )
