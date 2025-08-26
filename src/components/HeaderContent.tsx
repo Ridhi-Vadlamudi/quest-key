@@ -77,7 +77,7 @@ const HeaderContent = () => {
           <div className="flex items-center gap-4">
             <Button 
               variant="hero" 
-              onClick={() => handleNavigation("/dashboard")}
+              onClick={() => handleNavigation("/dashboard?tab=documents")}
             >
               My Documents
             </Button>
