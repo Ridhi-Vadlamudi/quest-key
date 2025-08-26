@@ -20,6 +20,13 @@ const FileUpload = () => {
     setProcessing(true);
 
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('You must be logged in to create documents');
+      }
+
       // Create document record for text
       const { data: docData, error: docError } = await supabase
         .from("documents")
@@ -27,6 +34,7 @@ const FileUpload = () => {
           title: title || "Text Document",
           content: textContent,
           file_type: "text/plain",
+          user_id: user.id, // This was missing!
         })
         .select()
         .single();
