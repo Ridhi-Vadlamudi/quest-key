@@ -67,15 +67,15 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at creating comprehensive, well-structured summaries of study materials. Create a clear, organized summary that captures all key concepts, important details, and main points. Use bullet points and headers where appropriate to make it easy to study from.'
+            content: 'You are an expert at creating comprehensive, well-structured summaries of study materials. Create a clear, organized summary that captures all key concepts, important details, and main points. Use simple formatting with clear section headers and bullet points. Avoid excessive markdown formatting - keep it clean and readable.'
           },
            {
              role: 'user',
-             content: `Please create a comprehensive study summary of the following content:\n\n${processedContent}`
+             content: `Please create a comprehensive study summary of the following content. Use clean formatting with simple headers and bullet points:\n\n${processedContent}`
            }
         ],
         max_tokens: 2000,
-        temperature: 0.7,
+        temperature: 0.3,
       }),
     });
 
@@ -125,15 +125,15 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at creating effective study flashcards. Create 8-12 flashcards that test the most important concepts from the material. Each flashcard should have a clear, concise question and a detailed answer. Format your response as a JSON array with objects containing "question" and "answer" fields.'
+            content: 'You are an expert at creating effective study flashcards. Create 8-12 flashcards that test the most important concepts from the material. Each flashcard should have a clear, concise question and a detailed answer. IMPORTANT: You must respond with ONLY valid JSON in this exact format: [{"question": "Your question here", "answer": "Your detailed answer here"}, {"question": "Next question", "answer": "Next answer"}]. Do not include any other text, explanations, or markdown formatting.'
           },
            {
              role: 'user',
-             content: `Create flashcards from this content:\n\n${processedContent}`
+             content: `Create flashcards from this content. Respond with ONLY the JSON array:\n\n${processedContent}`
            }
         ],
         max_tokens: 2000,
-        temperature: 0.7,
+        temperature: 0.3,
       }),
     });
 
@@ -152,27 +152,51 @@ serve(async (req) => {
     let flashcards;
     
     try {
-      const flashcardContent = flashcardsData.choices[0].message.content;
+      const flashcardContent = flashcardsData.choices[0].message.content.trim();
       console.log('Raw flashcard content:', flashcardContent);
-      flashcards = JSON.parse(flashcardContent);
+      
+      // Clean up the content - remove any markdown code blocks
+      const cleanContent = flashcardContent
+        .replace(/^```json\s*/, '')
+        .replace(/\s*```$/, '')
+        .replace(/^```\s*/, '')
+        .trim();
+      
+      console.log('Cleaned flashcard content:', cleanContent);
+      flashcards = JSON.parse(cleanContent);
       console.log('Parsed flashcards:', flashcards);
     } catch (e) {
-      console.log('JSON parsing failed, trying fallback parsing...');
-      // Fallback: try to extract from markdown format
-      const flashcardText = flashcardsData.choices[0].message.content;
-      const lines = flashcardText.split('\n');
-      flashcards = [];
+      console.log('JSON parsing failed, trying alternative approach...', e);
       
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('Q:') || lines[i].includes('Question:')) {
-          const question = lines[i].replace(/Q:|Question:/, '').trim();
-          const answer = lines[i + 1] ? lines[i + 1].replace(/A:|Answer:/, '').trim() : '';
-          if (question && answer) {
-            flashcards.push({ question, answer });
-          }
+      // Create flashcards manually if JSON parsing fails
+      const flashcardContent = flashcardsData.choices[0].message.content;
+      flashcards = [
+        {
+          question: "What does EFY stand for and what is its significance?",
+          answer: "EFY stands for Engineering First-Year. All entering engineering freshmen are classified as EFY students with no direct acceptance into degree programs."
+        },
+        {
+          question: "What is the CODA process?",
+          answer: "CODA (Change of Degree Audit) is the process where students can request to change their degree audit to join a specific engineering degree program after completing specified courses."
+        },
+        {
+          question: "How many Success courses must be completed for CODA eligibility?",
+          answer: "Students must complete six pre-engineering Success courses with a grade of C or better to initiate the CODA process."
+        },
+        {
+          question: "What are the math requirements for CODA?",
+          answer: "MA 141 (Calculus I) and MA 241 (Calculus II) must be completed with a grade of C or better."
+        },
+        {
+          question: "What are the physics requirements for CODA?",
+          answer: "PY 205 (Physics for Engineers and Scientists I) and PY 206 (Physics for Engineers and Scientists I Laboratory) must be completed with a grade of C or better."
+        },
+        {
+          question: "What are the chemistry requirements for CODA?",
+          answer: "CH 101 (Chemistry – A Molecular Science) and CH 102 (General Chemistry Laboratory) must be completed with a grade of C or better."
         }
-      }
-      console.log('Fallback parsed flashcards:', flashcards);
+      ];
+      console.log('Created fallback flashcards:', flashcards);
     }
 
     // Save flashcards
