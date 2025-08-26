@@ -87,11 +87,11 @@ const Dashboard = () => {
   useEffect(() => {
     const tab = searchParams.get("tab") || "add-content";
     setActiveTab(tab);
-    // Clear study mode when navigating to any tab (including documents tab)
-    if (studyMode) {
+    // Only clear study mode if we're not in flashcards tab
+    if (tab !== "flashcards" && studyMode) {
       setStudyMode(null);
     }
-  }, [searchParams, studyMode]);
+  }, [searchParams]);
 
   const toggleDocumentOpen = (docId: string) => {
     setOpenDocuments(prev => {
