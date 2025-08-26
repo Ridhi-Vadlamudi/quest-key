@@ -55,6 +55,7 @@ serve(async (req) => {
     }
 
     // Generate summary
+    console.log('Generating summary...');
     const summaryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -62,7 +63,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -73,14 +74,31 @@ serve(async (req) => {
              content: `Please create a comprehensive study summary of the following content:\n\n${processedContent}`
            }
         ],
-        max_completion_tokens: 2000,
+        max_tokens: 2000,
+        temperature: 0.7,
       }),
     });
 
+    if (!summaryResponse.ok) {
+      console.error('Summary API error:', await summaryResponse.text());
+      throw new Error('Failed to generate summary');
+    }
+
     const summaryData = await summaryResponse.json();
+    console.log('Summary response:', summaryData);
+    
+    if (!summaryData.choices || !summaryData.choices[0] || !summaryData.choices[0].message) {
+      throw new Error('Invalid summary response from OpenAI');
+    }
+    
     const summary = summaryData.choices[0].message.content;
+    console.log('Generated summary length:', summary?.length || 0);
 
     // Save summary
+    if (!summary || summary.trim().length === 0) {
+      throw new Error('Generated summary is empty');
+    }
+    
     const { error: summaryError } = await supabase
       .from('summaries')
       .insert({
@@ -88,9 +106,14 @@ serve(async (req) => {
         content: summary,
       });
 
-    if (summaryError) throw summaryError;
+    if (summaryError) {
+      console.error('Summary insert error:', summaryError);
+      throw summaryError;
+    }
+    console.log('Summary saved successfully');
 
     // Generate flashcards
+    console.log('Generating flashcards...');
     const flashcardsResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -98,7 +121,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -109,16 +132,32 @@ serve(async (req) => {
              content: `Create flashcards from this content:\n\n${processedContent}`
            }
         ],
-        max_completion_tokens: 2000,
+        max_tokens: 2000,
+        temperature: 0.7,
       }),
     });
 
+    if (!flashcardsResponse.ok) {
+      console.error('Flashcards API error:', await flashcardsResponse.text());
+      throw new Error('Failed to generate flashcards');
+    }
+
     const flashcardsData = await flashcardsResponse.json();
+    console.log('Flashcards response:', flashcardsData);
+    
+    if (!flashcardsData.choices || !flashcardsData.choices[0] || !flashcardsData.choices[0].message) {
+      throw new Error('Invalid flashcards response from OpenAI');
+    }
+    
     let flashcards;
     
     try {
-      flashcards = JSON.parse(flashcardsData.choices[0].message.content);
+      const flashcardContent = flashcardsData.choices[0].message.content;
+      console.log('Raw flashcard content:', flashcardContent);
+      flashcards = JSON.parse(flashcardContent);
+      console.log('Parsed flashcards:', flashcards);
     } catch (e) {
+      console.log('JSON parsing failed, trying fallback parsing...');
       // Fallback: try to extract from markdown format
       const flashcardText = flashcardsData.choices[0].message.content;
       const lines = flashcardText.split('\n');
@@ -133,10 +172,11 @@ serve(async (req) => {
           }
         }
       }
+      console.log('Fallback parsed flashcards:', flashcards);
     }
 
     // Save flashcards
-    if (flashcards && Array.isArray(flashcards)) {
+    if (flashcards && Array.isArray(flashcards) && flashcards.length > 0) {
       const flashcardInserts = flashcards.map((card: any) => ({
         document_id: documentId,
         question: card.question,
@@ -147,10 +187,17 @@ serve(async (req) => {
         .from('flashcards')
         .insert(flashcardInserts);
 
-      if (flashcardsError) throw flashcardsError;
+      if (flashcardsError) {
+        console.error('Flashcards insert error:', flashcardsError);
+        throw flashcardsError;
+      }
+      console.log(`Saved ${flashcards.length} flashcards successfully`);
+    } else {
+      console.warn('No valid flashcards generated');
     }
 
     // Generate practice questions
+    console.log('Generating practice questions...');
     const questionsResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -158,7 +205,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -169,22 +216,32 @@ serve(async (req) => {
              content: `Create practice questions from this content:\n\n${processedContent}`
            }
         ],
-        max_completion_tokens: 2000,
+        max_tokens: 2000,
+        temperature: 0.7,
       }),
     });
 
+    if (!questionsResponse.ok) {
+      console.error('Questions API error:', await questionsResponse.text());
+      throw new Error('Failed to generate practice questions');
+    }
+
     const questionsData = await questionsResponse.json();
+    console.log('Questions response:', questionsData);
     let questions;
     
     try {
-      questions = JSON.parse(questionsData.choices[0].message.content);
+      const questionContent = questionsData.choices[0].message.content;
+      console.log('Raw question content:', questionContent);
+      questions = JSON.parse(questionContent);
+      console.log('Parsed questions:', questions);
     } catch (e) {
-      console.log('Failed to parse questions JSON, skipping questions generation');
+      console.log('Failed to parse questions JSON, skipping questions generation:', e);
       questions = [];
     }
 
     // Save practice questions
-    if (questions && Array.isArray(questions)) {
+    if (questions && Array.isArray(questions) && questions.length > 0) {
       const questionInserts = questions.map((q: any) => ({
         document_id: documentId,
         question: q.question,
@@ -197,7 +254,13 @@ serve(async (req) => {
         .from('practice_questions')
         .insert(questionInserts);
 
-      if (questionsError) throw questionsError;
+      if (questionsError) {
+        console.error('Questions insert error:', questionsError);
+        throw questionsError;
+      }
+      console.log(`Saved ${questions.length} practice questions successfully`);
+    } else {
+      console.warn('No valid practice questions generated');
     }
 
     console.log('Document processing completed successfully');
