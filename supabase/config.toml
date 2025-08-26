@@ -14,7 +14,7 @@ verify_jwt = false
 
 [auth]
 enabled = true
-external_email_enabled = false
+external_email_enabled = true
 
 [auth.email]
 enable_signup = true
