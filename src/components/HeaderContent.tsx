@@ -1,12 +1,33 @@
 import { Button } from "@/components/ui/button";
-import { BookOpen, Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BookOpen, Menu, Home, BookMarked, LogOut, UserX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const HeaderContent = () => {
   const navigate = useNavigate();
 
   const handleNavigation = (path: string) => {
     navigate(path);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
+  const handleChangeAccount = () => {
+    navigate("/auth");
   };
 
   return (
@@ -42,9 +63,32 @@ const HeaderContent = () => {
             >
               My Documents
             </Button>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-background border border-border">
+                <DropdownMenuItem onClick={() => handleNavigation("/")} className="cursor-pointer">
+                  <Home className="mr-2 h-4 w-4" />
+                  Homepage
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleNavigation("/dashboard")} className="cursor-pointer">
+                  <BookMarked className="mr-2 h-4 w-4" />
+                  Study Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleChangeAccount} className="cursor-pointer">
+                  <UserX className="mr-2 h-4 w-4" />
+                  Change Account
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
