@@ -83,11 +83,15 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  // Update activeTab when URL changes
+  // Update activeTab when URL changes and clear study mode if needed
   useEffect(() => {
     const tab = searchParams.get("tab") || "add-content";
     setActiveTab(tab);
-  }, [searchParams]);
+    // Clear study mode when navigating to any tab (including documents tab)
+    if (studyMode) {
+      setStudyMode(null);
+    }
+  }, [searchParams, studyMode]);
 
   const toggleDocumentOpen = (docId: string) => {
     setOpenDocuments(prev => {
