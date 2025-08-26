@@ -65,25 +65,25 @@ const HeaderContent = () => {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="outline" size="icon" className="border-border/50 hover:bg-accent">
                   <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-background border border-border">
-                <DropdownMenuItem onClick={() => handleNavigation("/")} className="cursor-pointer">
+              <DropdownMenuContent align="end" className="w-48 bg-background border border-border shadow-md z-50">
+                <DropdownMenuItem onClick={() => handleNavigation("/")} className="cursor-pointer hover:bg-accent">
                   <Home className="mr-2 h-4 w-4" />
                   Homepage
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation("/dashboard")} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => handleNavigation("/dashboard")} className="cursor-pointer hover:bg-accent">
                   <BookMarked className="mr-2 h-4 w-4" />
                   Study Dashboard
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleChangeAccount} className="cursor-pointer">
+                <DropdownMenuItem onClick={handleChangeAccount} className="cursor-pointer hover:bg-accent">
                   <UserX className="mr-2 h-4 w-4" />
                   Change Account
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive hover:bg-destructive/10 focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </DropdownMenuItem>
