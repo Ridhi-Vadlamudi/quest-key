@@ -3,12 +3,6 @@ project_id = "agsarxzqbvkdcoqjtifk"
 [functions.process-document]
 verify_jwt = true
 
-[functions.send-verification-code]
-verify_jwt = false
-
-[functions.verify-code]
-verify_jwt = false
-
 [functions.send-auth-email]
 verify_jwt = false
 
