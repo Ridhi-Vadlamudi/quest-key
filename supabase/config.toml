@@ -3,9 +3,6 @@ project_id = "agsarxzqbvkdcoqjtifk"
 [functions.process-document]
 verify_jwt = true
 
-[functions.send-auth-email]
-verify_jwt = false
-
 [auth]
 enabled = true
 external_email_enabled = true
@@ -13,17 +10,5 @@ external_email_enabled = true
 [auth.email]
 enable_signup = true
 double_confirm_changes = false
-enable_confirmations = true
+enable_confirmations = false
 template = { invite = "", confirmation = "", recovery = "", magic_link = "", email_change = "" }
-
-[auth.email.smtp]
-host = ""
-port = 587
-user = ""
-pass = ""
-admin_email = ""
-sender_name = ""
-
-[auth.hook.send_email]
-enabled = true
-uri = "https://agsarxzqbvkdcoqjtifk.supabase.co/functions/v1/send-auth-email"

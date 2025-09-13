@@ -55,9 +55,6 @@ const Auth = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
-        }
       });
 
       if (error) {
@@ -68,13 +65,10 @@ const Auth = () => {
         throw error;
       }
 
-      // Check if user was created or already exists
-      if (data.user && !data.user.email_confirmed_at) {
-        setMessage("Check your email for a confirmation link to complete your account setup!");
-      } else if (data.user && data.user.email_confirmed_at) {
-        setMessage("Account already confirmed. You can sign in now.");
-      } else {
-        setMessage("Check your email for a confirmation link to complete your account setup!");
+      // With confirmations disabled, users can sign in immediately
+      if (data.user) {
+        setMessage("Account created successfully! You can now sign in.");
+        setIsLogin(true); // Switch to login mode
       }
     } catch (error: any) {
       console.error("Signup error:", error);
