@@ -75,21 +75,21 @@ const HeaderContent = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            <Button 
-              variant="hero" 
-              onClick={() => handleNavigation("/dashboard?tab=documents")}
-            >
-              My Documents
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="border-border/50 hover:bg-accent">
-                  <Menu className="h-5 w-5" />
+            {user && (
+              <>
+                <Button 
+                  variant="hero" 
+                  onClick={() => handleNavigation("/dashboard?tab=documents")}
+                >
+                  My Documents
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-background border border-border shadow-md z-50">
-                {user && (
-                  <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="border-border/50 hover:bg-accent">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-background border border-border shadow-md z-50">
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">Signed in as</p>
@@ -99,27 +99,46 @@ const HeaderContent = () => {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                  </>
-                )}
-                <DropdownMenuItem onClick={() => handleNavigation("/")} className="cursor-pointer hover:bg-accent">
-                  <Home className="mr-2 h-4 w-4" />
-                  Homepage
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation("/dashboard")} className="cursor-pointer hover:bg-accent">
-                  <BookMarked className="mr-2 h-4 w-4" />
-                  Study Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleChangeAccount} className="cursor-pointer hover:bg-accent">
-                  <UserX className="mr-2 h-4 w-4" />
-                  Change Account
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive hover:bg-destructive/10 focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <DropdownMenuItem onClick={() => handleNavigation("/")} className="cursor-pointer hover:bg-accent">
+                      <Home className="mr-2 h-4 w-4" />
+                      Homepage
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleNavigation("/dashboard")} className="cursor-pointer hover:bg-accent">
+                      <BookMarked className="mr-2 h-4 w-4" />
+                      Study Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleChangeAccount} className="cursor-pointer hover:bg-accent">
+                      <UserX className="mr-2 h-4 w-4" />
+                      Change Account
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive hover:bg-destructive/10 focus:text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+            {!user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="border-border/50 hover:bg-accent">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-background border border-border shadow-md z-50">
+                  <DropdownMenuItem onClick={() => handleNavigation("/")} className="cursor-pointer hover:bg-accent">
+                    <Home className="mr-2 h-4 w-4" />
+                    Homepage
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigation("/dashboard")} className="cursor-pointer hover:bg-accent">
+                    <BookMarked className="mr-2 h-4 w-4" />
+                    Study History
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </div>
