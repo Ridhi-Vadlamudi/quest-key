@@ -57,9 +57,8 @@ const Dashboard = () => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
       
-      if (!session) {
-        navigate("/auth");
-      }
+      // Only redirect to auth if trying to access personal content
+      // For now, just set loading to false and show empty state
     });
 
     // THEN check for existing session
@@ -68,9 +67,8 @@ const Dashboard = () => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
       
-      if (!session) {
-        navigate("/auth");
-      }
+      // Only redirect to auth if trying to access personal content
+      // For now, just set loading to false and show empty state
     });
 
     return () => subscription.unsubscribe();
@@ -196,7 +194,39 @@ const Dashboard = () => {
     }
   };
 
-  if (authLoading || loadingData) {
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show sign-in prompt for non-authenticated users trying to access saved content
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto text-center">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Sign In Required</h1>
+            <p className="text-muted-foreground">
+              Sign in to access your saved study materials and documents
+            </p>
+          </div>
+          <Button onClick={() => navigate("/auth")} size="lg" className="w-full">
+            Sign In to View Your Content
+          </Button>
+          <div className="mt-4">
+            <Button onClick={() => navigate("/")} variant="outline" size="lg" className="w-full">
+              Back to Home
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>

@@ -1,6 +1,6 @@
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
-import FileUpload from "@/components/FileUpload";
+import GuestStudyGenerator from "@/components/GuestStudyGenerator";
 
 const Index = () => {
   return (
@@ -15,7 +15,7 @@ const Index = () => {
             Upload your documents or paste text to generate AI-powered summaries, flashcards, and practice questions.
           </p>
         </div>
-          <FileUpload />
+          <GuestStudyGenerator />
         </div>
       </section>
     </>

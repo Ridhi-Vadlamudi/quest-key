@@ -3,6 +3,9 @@ project_id = "agsarxzqbvkdcoqjtifk"
 [functions.process-document]
 verify_jwt = true
 
+[functions.generate-study-materials]
+verify_jwt = false
+
 [auth]
 enabled = true
 external_email_enabled = true
