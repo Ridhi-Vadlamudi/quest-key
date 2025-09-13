@@ -7,8 +7,9 @@ const Hero = () => {
   const navigate = useNavigate();
 
   const handleUploadClick = () => {
-    // Navigate to dashboard documents tab
-    navigate("/dashboard?tab=documents");
+    // Scroll to upload section
+    const uploadSection = document.getElementById("upload");
+    uploadSection?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleLearnMoreClick = () => {
@@ -36,8 +37,8 @@ const Hero = () => {
             <Button onClick={handleUploadClick} size="lg">
               Start Studying
             </Button>
-            <Button onClick={() => navigate("/auth")} variant="outline" size="lg">
-              Sign Up
+            <Button onClick={handleLearnMoreClick} variant="outline" size="lg">
+              Learn More
             </Button>
           </div>
 
