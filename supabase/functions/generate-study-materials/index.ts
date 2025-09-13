@@ -48,7 +48,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert study assistant. Create concise, well-structured summaries that help students understand and remember key concepts. Focus on the most important information and organize it clearly.'
+            content: 'You are an expert study assistant. Create concise, well-structured summaries that help students understand and remember key concepts. Focus on the most important information and organize it clearly. Output clean, professional text without any markdown formatting (no ##, **, etc.). Use simple paragraph breaks and clear language.'
           },
           {
             role: 'user',
